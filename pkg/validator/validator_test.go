@@ -24,7 +24,7 @@ func TestNewService(t *testing.T) {
 
 func TestService_Validate_ValidData(t *testing.T) {
 	service := NewService()
-	
+
 	validData := &TestStruct{
 		Email:       "test@example.com",
 		Password:    "password123",
@@ -41,7 +41,7 @@ func TestService_Validate_ValidData(t *testing.T) {
 
 func TestService_Validate_InvalidData(t *testing.T) {
 	service := NewService()
-	
+
 	tests := []struct {
 		name        string
 		data        *TestStruct
@@ -137,11 +137,11 @@ func TestService_Validate_InvalidData(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := service.Validate(tt.data)
-			
+
 			if tt.expectError && err == nil {
 				t.Errorf("Validate() should return error for %s", tt.name)
 			}
-			
+
 			if !tt.expectError && err != nil {
 				t.Errorf("Validate() should not return error for %s, got: %v", tt.name, err)
 			}
@@ -151,13 +151,13 @@ func TestService_Validate_InvalidData(t *testing.T) {
 
 func TestService_Validate_MultipleErrors(t *testing.T) {
 	service := NewService()
-	
+
 	invalidData := &TestStruct{
-		Email:       "",           // missing
-		Password:    "123",        // too short
-		Name:        "",           // missing
-		PhoneNumber: "123",        // too short
-		Age:         -5,           // negative
+		Email:       "",    // missing
+		Password:    "123", // too short
+		Name:        "",    // missing
+		PhoneNumber: "123", // too short
+		Age:         -5,    // negative
 	}
 
 	err := service.Validate(invalidData)
@@ -174,7 +174,7 @@ func TestService_Validate_MultipleErrors(t *testing.T) {
 
 func TestService_Validate_NilData(t *testing.T) {
 	service := NewService()
-	
+
 	err := service.Validate(nil)
 	if err == nil {
 		t.Error("Validate() should return error for nil data")
@@ -185,7 +185,7 @@ type EmptyStruct struct{}
 
 func TestService_Validate_EmptyStruct(t *testing.T) {
 	service := NewService()
-	
+
 	emptyData := &EmptyStruct{}
 	err := service.Validate(emptyData)
 	if err != nil {
@@ -200,7 +200,7 @@ type NestedStruct struct {
 
 func TestService_Validate_NestedStruct(t *testing.T) {
 	service := NewService()
-	
+
 	validNested := &NestedStruct{
 		User: TestStruct{
 			Email:       "test@example.com",
@@ -220,7 +220,7 @@ func TestService_Validate_NestedStruct(t *testing.T) {
 	invalidNested := &NestedStruct{
 		User: TestStruct{
 			Email:       "invalid-email", // invalid email
-			Password:    "123",          // too short
+			Password:    "123",           // too short
 			Name:        "John Doe",
 			PhoneNumber: "0812345678",
 			Age:         25,

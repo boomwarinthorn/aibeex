@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"fiber-hello-world/internal/domain/entity"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -25,7 +26,7 @@ func (m *MockUserRepository) Create(user *entity.User) (*entity.User, error) {
 	if _, exists := m.users[user.Email]; exists {
 		return nil, errors.New("user already exists")
 	}
-	
+
 	user.ID = m.nextID
 	m.nextID++
 	m.users[user.Email] = user
@@ -305,7 +306,7 @@ func TestUserUseCase_RegisterUser_RepositoryError(t *testing.T) {
 	mockRepo := &FailingMockUserRepository{
 		MockUserRepository: NewMockUserRepository(),
 	}
-	
+
 	useCase := NewUserUseCase(mockRepo)
 
 	_, err := useCase.RegisterUser("repo@example.com", "password123", "Repo User", "0812345678", "1990-01-15")

@@ -7,13 +7,14 @@ import (
 	"time"
 
 	"fiber-hello-world/internal/domain/entity"
+
 	_ "modernc.org/sqlite"
 )
 
 func setupTestDB(t *testing.T) (*sql.DB, func()) {
 	// Create temporary database file
 	dbFile := "test_users.db"
-	
+
 	db, err := sql.Open("sqlite", dbFile)
 	if err != nil {
 		t.Fatalf("Failed to open test database: %v", err)
@@ -52,7 +53,7 @@ func TestInitDatabase(t *testing.T) {
 
 	// Change working directory temporarily for the test
 	originalDBPath := "users.db"
-	
+
 	// Test InitDatabase function
 	db, err := InitDatabase()
 	if err != nil {

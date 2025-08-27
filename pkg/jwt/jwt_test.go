@@ -112,7 +112,7 @@ func TestService_ValidateToken(t *testing.T) {
 
 func TestService_ValidateToken_ExpiredToken(t *testing.T) {
 	service := NewService("test-secret")
-	
+
 	// Create an expired token manually
 	pastTime := time.Now().Add(-time.Hour) // 1 hour ago
 	claims := &Claims{
