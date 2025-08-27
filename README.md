@@ -20,18 +20,22 @@ fiber-hello-world/
 │   └── api/
 │       └── main.go                 # Application entry point
 ├── config/
-│   └── config.go                   # Configuration management
+│   ├── config.go                   # Configuration management
+│   └── config_test.go              # Configuration tests
 ├── internal/
 │   ├── domain/
 │   │   ├── entity/
-│   │   │   └── user.go             # User domain entity
+│   │   │   ├── user.go             # User domain entity
+│   │   │   └── user_test.go        # User entity tests
 │   │   └── repository/
 │   │       └── user_repository.go  # Repository interface
 │   ├── usecase/
-│   │   └── user_usecase.go         # Business logic layer
+│   │   ├── user_usecase.go         # Business logic layer
+│   │   └── user_usecase_test.go    # Use case tests
 │   ├── infrastructure/
 │   │   └── database/
-│   │       └── sqlite_user_repository.go  # SQLite implementation
+│   │       ├── sqlite_user_repository.go      # SQLite implementation
+│   │       └── sqlite_user_repository_test.go # Repository tests
 │   └── presentation/
 │       ├── dto/
 │       │   └── user_dto.go         # Data Transfer Objects
@@ -41,12 +45,20 @@ fiber-hello-world/
 │           └── jwt_middleware.go   # JWT authentication middleware
 ├── pkg/
 │   ├── jwt/
-│   │   └── jwt.go                  # JWT service utilities
+│   │   ├── jwt.go                  # JWT service utilities
+│   │   └── jwt_test.go             # JWT service tests
 │   └── validator/
-│       └── validator.go            # Validation service
+│       ├── validator.go            # Validation service
+│       └── validator_test.go       # Validation service tests
 ├── docs/                           # Swagger documentation files
+│   ├── docs.go                     # Generated docs
+│   ├── swagger.json               # OpenAPI JSON spec
+│   └── swagger.yaml               # OpenAPI YAML spec
+├── .env.example                    # Environment variables template
+├── .gitignore                      # Git ignore rules
 ├── go.mod                          # Go modules
 ├── go.sum                          # Go modules checksums
+├── main.go.backup                  # Backup of main file
 ├── Makefile                        # Build and development commands
 ├── README.md                       # This file
 └── users.db                        # SQLite database (auto-generated)
