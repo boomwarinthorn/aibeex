@@ -16,6 +16,8 @@ package main
 // @description Type "Bearer" followed by a space and JWT token.
 
 import (
+	"database/sql"
+	"log"
 	"strings"
 	"time"
 
@@ -24,6 +26,7 @@ import (
 	"github.com/gofiber/swagger"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	_ "modernc.org/sqlite"
 
 	_ "fiber-hello-world/docs" // This line is needed for go-swagger to find your docs!
 )
@@ -61,9 +64,8 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// In-memory user storage (in production, use a database)
-var users []User
-var userIDCounter = 1
+// Database connection
+var db *sql.DB
 
 // JWT secret key (in production, use environment variable)
 var jwtSecret = []byte("your-secret-key")
@@ -71,7 +73,82 @@ var jwtSecret = []byte("your-secret-key")
 // Initialize validator
 var validate = validator.New()
 
+// initDatabase initializes SQLite database and creates tables
+func initDatabase() {
+	var err error
+	db, err = sql.Open("sqlite", "users.db")
+	if err != nil {
+		log.Fatal("Failed to open database:", err)
+	}
+
+	// Create users table if it doesn't exist
+	createTableQuery := `
+	CREATE TABLE IF NOT EXISTS users (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		email TEXT UNIQUE NOT NULL,
+		password TEXT NOT NULL,
+		full_name TEXT NOT NULL,
+		phone_number TEXT NOT NULL,
+		birthday TEXT NOT NULL,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	);`
+
+	_, err = db.Exec(createTableQuery)
+	if err != nil {
+		log.Fatal("Failed to create table:", err)
+	}
+
+	log.Println("Database initialized successfully")
+}
+
+// createUser inserts a new user into the database
+func createUser(user User) (*User, error) {
+	query := `
+	INSERT INTO users (email, password, full_name, phone_number, birthday, created_at)
+	VALUES (?, ?, ?, ?, ?, ?)
+	RETURNING id`
+
+	var id int
+	err := db.QueryRow(query, user.Email, user.Password, user.FullName, user.PhoneNumber, user.Birthday, user.CreatedAt).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+
+	user.ID = id
+	return &user, nil
+}
+
+// getUserByEmail retrieves a user by email from the database
+func getUserByEmail(email string) (*User, error) {
+	query := `SELECT id, email, password, full_name, phone_number, birthday, created_at FROM users WHERE email = ?`
+
+	var user User
+	err := db.QueryRow(query, email).Scan(&user.ID, &user.Email, &user.Password, &user.FullName, &user.PhoneNumber, &user.Birthday, &user.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+// getUserByID retrieves a user by ID from the database
+func getUserByID(id int) (*User, error) {
+	query := `SELECT id, email, password, full_name, phone_number, birthday, created_at FROM users WHERE id = ?`
+
+	var user User
+	err := db.QueryRow(query, id).Scan(&user.ID, &user.Email, &user.Password, &user.FullName, &user.PhoneNumber, &user.Birthday, &user.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func main() {
+	// Initialize database
+	initDatabase()
+	defer db.Close()
+
 	// Create fiber app
 	app := fiber.New()
 
@@ -134,13 +211,12 @@ func registerUser(c *fiber.Ctx) error {
 	}
 
 	// Check if email already exists
-	for _, user := range users {
-		if user.Email == req.Email {
-			return c.Status(409).JSON(fiber.Map{
-				"error":   "Email already exists",
-				"message": "User with this email already registered",
-			})
-		}
+	existingUser, err := getUserByEmail(req.Email)
+	if err == nil && existingUser != nil {
+		return c.Status(409).JSON(fiber.Map{
+			"error":   "Email already exists",
+			"message": "User with this email already registered",
+		})
 	}
 
 	// Hash password
@@ -163,7 +239,6 @@ func registerUser(c *fiber.Ctx) error {
 
 	// Create new user
 	newUser := User{
-		ID:          userIDCounter,
 		Email:       req.Email,
 		Password:    string(hashedPassword),
 		FullName:    req.FullName,
@@ -172,15 +247,20 @@ func registerUser(c *fiber.Ctx) error {
 		CreatedAt:   time.Now(),
 	}
 
-	// Add user to storage
-	users = append(users, newUser)
-	userIDCounter++
+	// Save user to database
+	savedUser, err := createUser(newUser)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error":   "Failed to save user",
+			"message": err.Error(),
+		})
+	}
 
 	// Return success response (exclude password from response)
-	newUser.Password = ""
+	savedUser.Password = ""
 	return c.Status(201).JSON(fiber.Map{
 		"message": "User registered successfully",
-		"user":    newUser,
+		"user":    savedUser,
 	})
 }
 
@@ -214,15 +294,8 @@ func loginUser(c *fiber.Ctx) error {
 	}
 
 	// Find user by email
-	var foundUser *User
-	for i, user := range users {
-		if user.Email == req.Email {
-			foundUser = &users[i]
-			break
-		}
-	}
-
-	if foundUser == nil {
+	foundUser, err := getUserByEmail(req.Email)
+	if err != nil {
 		return c.Status(401).JSON(fiber.Map{
 			"error":   "Invalid credentials",
 			"message": "Email or password is incorrect",
@@ -230,7 +303,7 @@ func loginUser(c *fiber.Ctx) error {
 	}
 
 	// Check password
-	err := bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(req.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(req.Password))
 	if err != nil {
 		return c.Status(401).JSON(fiber.Map{
 			"error":   "Invalid credentials",
@@ -334,15 +407,8 @@ func getCurrentUser(c *fiber.Ctx) error {
 	}
 
 	// Find user by ID from token claims
-	var foundUser *User
-	for i, user := range users {
-		if user.ID == claims.UserID {
-			foundUser = &users[i]
-			break
-		}
-	}
-
-	if foundUser == nil {
+	foundUser, err := getUserByID(claims.UserID)
+	if err != nil {
 		return c.Status(404).JSON(fiber.Map{
 			"error":   "User not found",
 			"message": "User associated with this token no longer exists",

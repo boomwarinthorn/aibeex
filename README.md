@@ -9,11 +9,14 @@ A Go web server using the Fiber framework that provides user authentication and 
 - ✅ User login with JWT token generation
 - ✅ JWT-protected user profile endpoint
 - ✅ Swagger/OpenAPI documentation
+- ✅ SQLite database for persistent data storage
 - ✅ Password hashing with bcrypt
 - ✅ Email validation
 - ✅ Input validation for all fields
 - ✅ Duplicate email prevention
-- ✅ JWT token authentication (24-hour expiry)
+- ✅ JWT tokens expire after 24 hours
+- ✅ Persistent data storage with SQLite database
+- ✅ Database auto-initialization on first run
 
 ## Installation
 
@@ -49,6 +52,32 @@ When you make changes to the API endpoints or add new ones, regenerate the Swagg
 ```bash
 go run github.com/swaggo/swag/cmd/swag@latest init
 ```
+
+## Database
+
+The application uses SQLite for persistent data storage. The database file (`users.db`) is automatically created in the project directory when you first run the application.
+
+### Database Schema
+
+**Users Table:**
+```sql
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    full_name TEXT NOT NULL,
+    phone_number TEXT NOT NULL,
+    birthday TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Database Features:
+- Automatic table creation on first run
+- Email uniqueness constraint
+- Auto-incrementing user IDs
+- Timestamps for user creation
+- Persistent storage across server restarts
 
 ## API Endpoints
 
@@ -260,6 +289,7 @@ curl -X POST http://localhost:3000/login \
 - [Validator](https://github.com/go-playground/validator) - Input validation
 - [JWT](https://github.com/golang-jwt/jwt) - JSON Web Token implementation
 - [Swagger](https://github.com/gofiber/swagger) - API documentation and testing
+- [SQLite](https://modernc.org/sqlite) - Pure Go SQLite database driver
 
 ## Security Features
 
