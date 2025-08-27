@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"fiber-hello-world/internal/domain/entity"
+
 	_ "modernc.org/sqlite"
 )
 

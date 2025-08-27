@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"fiber-hello-world/pkg/jwt"
+
 	"github.com/gofiber/fiber/v2"
 )
 

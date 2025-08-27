@@ -28,7 +28,7 @@ func NewService(secretKey string) *Service {
 // GenerateToken creates a new JWT token for the user
 func (s *Service) GenerateToken(userID int, email string) (string, time.Time, error) {
 	expirationTime := time.Now().Add(24 * time.Hour) // Token expires in 24 hours
-	
+
 	claims := &Claims{
 		UserID: userID,
 		Email:  email,

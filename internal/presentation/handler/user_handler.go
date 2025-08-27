@@ -11,9 +11,9 @@ import (
 
 // UserHandler handles user-related HTTP requests
 type UserHandler struct {
-	userUseCase   *usecase.UserUseCase
-	jwtService    *jwt.Service
-	validator     *validator.Service
+	userUseCase *usecase.UserUseCase
+	jwtService  *jwt.Service
+	validator   *validator.Service
 }
 
 // NewUserHandler creates a new user handler
@@ -63,7 +63,7 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 		} else if err.Error() == "invalid birthday format, should be YYYY-MM-DD" {
 			status = 400
 		}
-		
+
 		return c.Status(status).JSON(dto.ErrorResponse{
 			Error:   "Registration failed",
 			Message: err.Error(),
