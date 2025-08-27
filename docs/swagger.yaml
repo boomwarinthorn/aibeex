@@ -1,5 +1,76 @@
 basePath: /
 definitions:
+  dto.ErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.LoginResponse:
+    properties:
+      expiresAt:
+        type: string
+      message:
+        type: string
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/dto.UserResponse'
+    type: object
+  dto.RegisterRequest:
+    properties:
+      birthday:
+        type: string
+      email:
+        type: string
+      fullName:
+        minLength: 2
+        type: string
+      password:
+        minLength: 6
+        type: string
+      phoneNumber:
+        minLength: 10
+        type: string
+    required:
+    - birthday
+    - email
+    - fullName
+    - password
+    - phoneNumber
+    type: object
+  dto.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  dto.UserResponse:
+    properties:
+      birthday:
+        type: string
+      createdAt:
+        type: string
+      email:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: integer
+      phoneNumber:
+        type: string
+    type: object
   main.LoginRequest:
     properties:
       email:
@@ -38,7 +109,7 @@ info:
     email: support@example.com
     name: API Support
   description: A Go Fiber API with JWT authentication, user registration, and login
-    functionality
+    functionality built with Clean Architecture
   license:
     name: MIT
     url: https://github.com/boomwarinthorn/aibeex/blob/main/LICENSE
