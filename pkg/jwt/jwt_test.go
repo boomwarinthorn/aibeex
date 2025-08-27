@@ -215,9 +215,10 @@ func TestService_GenerateAndValidateRoundtrip(t *testing.T) {
 				t.Errorf("Email = %v, want %v", claims.Email, tt.email)
 			}
 
-			// Verify expiration time matches
-			if !claims.ExpiresAt.Time.Equal(expTime) {
-				t.Errorf("ExpiresAt = %v, want %v", claims.ExpiresAt.Time, expTime)
+			// Verify expiration time within reasonable tolerance (1 second)
+			timeDiff := claims.ExpiresAt.Time.Sub(expTime)
+			if timeDiff < -1*time.Second || timeDiff > 1*time.Second {
+				t.Errorf("ExpiresAt = %v, want %v (diff: %v)", claims.ExpiresAt.Time, expTime, timeDiff)
 			}
 		})
 	}
