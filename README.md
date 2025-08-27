@@ -50,8 +50,9 @@ fiber-hello-world/
 │   └── validator/
 │       ├── validator.go            # Validation service
 │       └── validator_test.go       # Validation service tests
-├── docs/                           # Swagger documentation files
-│   ├── docs.go                     # Generated docs
+├── docs/                           # Documentation files
+│   ├── database.md                # Database architecture with ER diagrams
+│   ├── docs.go                     # Generated Swagger docs
 │   ├── swagger.json               # OpenAPI JSON spec
 │   └── swagger.yaml               # OpenAPI YAML spec
 ├── .env.example                    # Environment variables template
