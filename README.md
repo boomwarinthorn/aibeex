@@ -7,6 +7,8 @@ A Go web server using the Fiber framework that provides user authentication and 
 - ✅ Hello World JSON API endpoint
 - ✅ User registration with validation
 - ✅ User login with JWT token generation
+- ✅ JWT-protected user profile endpoint
+- ✅ Swagger/OpenAPI documentation
 - ✅ Password hashing with bcrypt
 - ✅ Email validation
 - ✅ Input validation for all fields
@@ -29,6 +31,24 @@ go run main.go
 ```
 
 The server will start on `http://localhost:3000`
+
+## Swagger Documentation
+
+Interactive API documentation is available at: `http://localhost:3000/swagger/index.html`
+
+The Swagger UI provides:
+- Complete API endpoint documentation
+- Interactive testing interface
+- Request/response schema definitions
+- Authentication examples with Bearer tokens
+
+### Regenerating Swagger Documentation
+
+When you make changes to the API endpoints or add new ones, regenerate the Swagger docs:
+
+```bash
+go run github.com/swaggo/swag/cmd/swag@latest init
+```
 
 ## API Endpoints
 
@@ -114,6 +134,65 @@ curl -X POST http://localhost:3000/register \
 }'
 ```
 
+### GET `/me`
+Get current user information using JWT token.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "User information retrieved successfully",
+  "user": {
+    "id": 1,
+    "email": "user@example.com",
+    "fullName": "John Doe",
+    "phoneNumber": "0812345678",
+    "birthday": "1990-01-15",
+    "createdAt": "2025-08-27T14:00:00Z"
+  }
+}
+```
+
+**Error Responses:**
+
+*401 - Authorization Required:*
+```json
+"Authorization header required"
+```
+
+*401 - Bearer Token Required:*
+```json
+"Bearer token required"
+```
+
+*401 - Invalid Token:*
+```json
+"Invalid token"
+```
+
+*404 - User Not Found:*
+```json
+{
+  "error": "User not found",
+  "message": "User associated with this token no longer exists"
+}
+```
+
+**Example:**
+```bash
+# First login to get token
+TOKEN=$(curl -s -X POST http://localhost:3000/login \
+-H "Content-Type: application/json" \
+-d '{"email":"test@example.com","password":"password123"}' | jq -r .token)
+
+# Then use token to get user info
+curl -X GET http://localhost:3000/me \
+-H "Authorization: Bearer $TOKEN"
+
 ### POST `/login`
 Authenticate user and receive JWT token.
 
@@ -180,11 +259,14 @@ curl -X POST http://localhost:3000/login \
 - [bcrypt](https://pkg.go.dev/golang.org/x/crypto/bcrypt) - Password hashing
 - [Validator](https://github.com/go-playground/validator) - Input validation
 - [JWT](https://github.com/golang-jwt/jwt) - JSON Web Token implementation
+- [Swagger](https://github.com/gofiber/swagger) - API documentation and testing
 
 ## Security Features
 
 - Passwords are hashed using bcrypt before storage
 - JWT tokens for secure authentication (24-hour expiry)
+- Authorization header validation (Bearer token format)
+- Token signature verification and claims validation
 - Input validation prevents malformed data
 - Email uniqueness validation
 - Secure password requirements (minimum 6 characters)
